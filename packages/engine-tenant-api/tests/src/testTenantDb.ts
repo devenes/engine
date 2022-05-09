@@ -77,6 +77,8 @@ const schema: Schema = {
 
 const projectSchemaResolver: ProjectSchemaResolver = {
 	getSchema: project => Promise.resolve(schema),
+	clearCache() {
+	},
 }
 
 export const authenticatedIdentityId = testUuid(999)

@@ -21,6 +21,7 @@ import {
 import { mergeTypeDefs } from '@graphql-tools/merge'
 import { DocumentNode } from 'graphql'
 import { makeExecutableSchema } from '@graphql-tools/schema'
+import { ProjectSchemaResolver } from '@contember/engine-tenant-api'
 
 type KoaState =
 	& AuthMiddlewareState
@@ -39,6 +40,7 @@ export class SystemGraphQLMiddlewareFactory {
 		private readonly resolverContextFactory: ResolverContextFactory,
 		private readonly errorLogger: ErrorLogger,
 		private readonly debugMode: boolean,
+		private readonly projectSchemaResolver: ProjectSchemaResolver,
 	) {}
 
 	create(): KoaMiddleware<KoaState> {
@@ -69,6 +71,7 @@ export class SystemGraphQLMiddlewareFactory {
 			listeners.push({
 				onResponse: ({ context }) => {
 					context.koaContext.state.projectContainer.contentSchemaResolver.clearCache()
+					this.projectSchemaResolver.clearCache()
 				},
 			})
 			listeners.push(createDbQueriesListener(context => context.db.client))

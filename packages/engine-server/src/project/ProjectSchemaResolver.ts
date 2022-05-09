@@ -3,11 +3,13 @@ import {
 	ProjectGroup,
 	ProjectSchemaResolver as ProjectSchemaResolverInterface,
 } from '@contember/engine-tenant-api'
-import { SchemaVersionBuilder } from '@contember/engine-system-api'
+import { SchemaVersionBuilder, VersionedSchema } from '@contember/engine-system-api'
 import { ProjectContainerResolver } from '@contember/engine-http'
 import { Schema } from '@contember/schema'
 
 export class ProjectSchemaResolver implements ProjectSchemaResolverInterface {
+	private schemaCache = new Map<string, VersionedSchema>()
+
 	constructor(
 		private readonly projectContainerResolver: ProjectContainerResolver,
 		private readonly schemaVersionBuilder: SchemaVersionBuilder,
@@ -18,8 +20,18 @@ export class ProjectSchemaResolver implements ProjectSchemaResolverInterface {
 		if (!container) {
 			return undefined
 		}
+		const cacheKey = JSON.stringify({ groupSlug: projectGroup.slug, slug })
 		const db = container.systemDatabaseContextFactory.create(undefined)
-		return await this.schemaVersionBuilder.buildSchema(db)
+		const cachedSchema = this.schemaCache.get(cacheKey)
+		const newSchema = await this.schemaVersionBuilder.buildSchema(db, cachedSchema)
+		if (cachedSchema !== newSchema) {
+			this.schemaCache.set(cacheKey, newSchema)
+		}
+		return newSchema
+	}
+
+	clearCache() {
+		this.schemaCache.clear()
 	}
 }
 
@@ -35,5 +47,9 @@ export class ProjectSchemaResolverProxy implements ProjectSchemaResolverInterfac
 			throw new Error('Resolved is not set')
 		}
 		return this.resolver.getSchema(projectGroup, projectSlug)
+	}
+
+	clearCache() {
+		this.resolver?.clearCache()
 	}
 }

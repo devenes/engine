@@ -147,8 +147,8 @@ export class MasterContainerFactory {
 				new ProjectContainerResolver(projectContainerFactory, projectConfigResolver, tenantProjectManager, systemContainer.projectInitializer))
 			.addService('tenantGraphQlMiddlewareFactory', ({ tenantContainer }) =>
 				new TenantGraphQLMiddlewareFactory(tenantContainer.resolvers, tenantContainer.resolverContextFactory, logSentryError))
-			.addService('systemGraphQLMiddlewareFactory', ({ systemContainer, debugMode }) =>
-				new SystemGraphQLMiddlewareFactory(systemContainer.systemResolversFactory, systemContainer.resolverContextFactory, logSentryError, debugMode))
+			.addService('systemGraphQLMiddlewareFactory', ({ systemContainer, debugMode, projectSchemaResolver }) =>
+				new SystemGraphQLMiddlewareFactory(systemContainer.systemResolversFactory, systemContainer.resolverContextFactory, logSentryError, debugMode, projectSchemaResolver))
 			.addService('promRegistry', ({ projectContainerResolver, processType, tenantContainer }) => {
 				if (processType === ProcessType.clusterMaster) {
 					const register = new prom.AggregatorRegistry()

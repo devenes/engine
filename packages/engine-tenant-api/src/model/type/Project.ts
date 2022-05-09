@@ -21,6 +21,7 @@ export interface ProjectWithSecrets extends Project {
 
 export interface ProjectSchemaResolver {
 	getSchema(projectGroup: ProjectGroup, projectSlug: string): Promise<Schema | undefined>
+	clearCache(): void
 }
 
 export interface ProjectInitializer {
