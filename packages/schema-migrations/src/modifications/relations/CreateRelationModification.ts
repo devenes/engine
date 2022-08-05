@@ -19,6 +19,7 @@ import { createFields } from '../utils/diffUtils'
 import { getPrimaryColumnType } from '../utils/getPrimaryColumnType'
 import { createJunctionTableSql } from '../utils/createJunctionTable'
 import { normalizeManyHasManyRelation, PartialManyHasManyRelation } from './normalization'
+import { addForeignKeyConstraint } from './helpers'
 
 
 export class CreateRelationModificationHandler implements ModificationHandler<CreateRelationModificationData> {
@@ -42,21 +43,7 @@ export class CreateRelationModificationHandler implements ModificationHandler<Cr
 					notNull: !relation.nullable,
 				},
 			})
-			const fkName = NamingHelper.createForeignKeyName(
-				entity.tableName,
-				relation.joiningColumn.columnName,
-				targetEntity.tableName,
-				targetEntity.primaryColumn,
-			)
-			builder.addConstraint(entity.tableName, fkName, {
-				foreignKeys: {
-					columns: relation.joiningColumn.columnName,
-					references: `"${targetEntity.tableName}"("${targetEntity.primaryColumn}")`,
-					onDelete: 'NO ACTION',
-				},
-				deferrable: true,
-				deferred: false,
-			})
+			addForeignKeyConstraint({ builder, entity, targetEntity, relation })
 		}
 		acceptRelationTypeVisitor(this.schema.model, entity, this.getNormalizedOwningSide(), {
 			visitManyHasOne: ({ relation }) => {
