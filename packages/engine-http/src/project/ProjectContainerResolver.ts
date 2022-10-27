@@ -25,6 +25,9 @@ export class ProjectContainerResolver implements EventEmitter<ProjectContainerRe
 		private readonly tenantConfig: TenantConfig,
 	) {}
 
+	public getExistingContainers(): ProjectContainer[] {
+		return this.projectContainers.getAllResolved().map(it => it.container)
+	}
 
 	public async getProjectContainer(slug: string, { alias = false }: { alias?: boolean } = {}): Promise<ProjectContainer | undefined> {
 		const realSlug = this.projectContainers.resolveAlias(slug)

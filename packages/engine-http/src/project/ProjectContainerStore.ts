@@ -5,6 +5,7 @@ type ContainerWithMeta = { container: ProjectContainer; cleanups: (() => void)[]
 
 export class ProjectContainerStore {
 	private containers = new PromiseMap<string, ContainerWithMeta>()
+	private resolvedContainers = new Map<string, ContainerWithMeta>()
 	private aliasMapping = new Map<string, string>()
 
 	public resolveAlias(slug: string): string | undefined {
@@ -24,10 +25,21 @@ export class ProjectContainerStore {
 	}
 
 	public async fetchContainer(slug: string, factory: (slug: string) => Promise<ContainerWithMeta>): Promise<ContainerWithMeta> {
-		return await this.containers.fetch(slug, factory)
+		const container = await this.containers.fetch(slug, factory)
+
+		// removed during await
+		if (this.containers.has(slug)) {
+			this.resolvedContainers.set(slug, container)
+		}
+		return container
 	}
 
 	public removeContainer(slug: string): void {
 		this.containers.delete(slug)
+		this.resolvedContainers.delete(slug)
+	}
+
+	public getAllResolved(): ContainerWithMeta[] {
+		return Array.from(this.resolvedContainers.values())
 	}
 }
